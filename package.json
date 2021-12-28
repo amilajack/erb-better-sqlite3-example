@@ -37,7 +37,8 @@
     "files": [
       "dist",
       "node_modules",
-      "package.json"
+      "package.json",
+      "sql"
     ],
     "afterSign": ".erb/scripts/notarize.js",
     "mac": {
@@ -163,6 +164,7 @@
     "@teamsupercell/typings-for-css-modules-loader": "^2.5.1",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
+    "@types/better-sqlite3": "^7.4.2",
     "@types/history": "4.7.9",
     "@types/jest": "^27.0.3",
     "@types/node": "17.0.5",
@@ -171,7 +173,6 @@
     "@types/react-router": "^5.1.17",
     "@types/react-router-dom": "^5.3.2",
     "@types/react-test-renderer": "^17.0.1",
-    "@types/sqlite3": "^3.1.8",
     "@types/terser-webpack-plugin": "^5.0.4",
     "@types/webpack-dev-server": "^4.5.0",
     "@types/webpack-env": "^1.16.3",

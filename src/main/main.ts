@@ -11,12 +11,14 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
+import fs from 'fs';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import sqlite from 'sqlite3';
+import Database from 'better-sqlite3';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import webpackPaths from '../../.erb/configs/webpack.paths';
 
 export default class AppUpdater {
   constructor() {
@@ -25,25 +27,6 @@ export default class AppUpdater {
     autoUpdater.checkForUpdatesAndNotify();
   }
 }
-
-const sqlite3 = sqlite.verbose();
-const db = new sqlite3.Database(':memory:');
-
-db.serialize(() => {
-  db.run('CREATE TABLE lorem (info TEXT)');
-
-  const stmt = db.prepare('INSERT INTO lorem VALUES (?)');
-  for (let i = 0; i < 10; i += 1) {
-    stmt.run(`Ipsum ${i}`);
-  }
-  stmt.finalize();
-
-  db.each('SELECT rowid AS id, info FROM lorem', (_err, row) => {
-    console.log(`${row.id}: ${row.info}`);
-  });
-});
-
-db.close();
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -60,6 +43,30 @@ if (process.env.NODE_ENV === 'production') {
 
 const isDevelopment =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+
+// Connect to db
+const db = new Database(':memory:', { verbose: console.log });
+
+// Read run-time assets
+const sql = isDevelopment
+  ? path.join(webpackPaths.appPath, 'sql')
+  : path.join(__dirname, '../../sql'); // In prod, __dirname is release/app/dist/main. We want release/app/sql
+const create = fs.readFileSync(path.join(sql, 'create.sql')).toString().trim();
+const insert = fs.readFileSync(path.join(sql, 'insert.sql')).toString().trim();
+
+// Prepare the query
+db.exec(create);
+const insertStmt = db.prepare(insert);
+
+// Insert items
+const insertMany = db.transaction((cats) => {
+  for (const cat of cats) insertStmt.run(cat);
+});
+insertMany([
+  { name: 'Joey', age: 2 },
+  { name: 'Sally', age: 4 },
+  { name: 'Junior', age: 1 },
+]);
 
 if (isDevelopment) {
   require('electron-debug')();
