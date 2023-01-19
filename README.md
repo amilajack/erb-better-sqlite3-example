@@ -26,6 +26,7 @@ You **must** install the dependencies as `dependencies` **and not** `devDepencen
 **These changes that were made to ERB:**
 
 ```bash
-cd build/app
+npm i --save-dev @types/better-sqlite3
+cd cd release/app
 npm i better-sqlite3
 ```
